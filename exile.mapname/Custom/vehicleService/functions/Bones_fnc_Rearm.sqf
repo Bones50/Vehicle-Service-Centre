@@ -100,4 +100,4 @@ if(_reloadCost > 0 && isTradeEnabled)then{
         publicVariableServer "takegive_poptab";
 };
 
-["SuccessTitleOnly", ["Rearm Complete, Total Cost was %1 Poptabs", _reloadCost]] call ExileClient_gui_toaster_addTemplateToast;
+["SuccessTitleOnly", [format["Rearm Complete, Total Cost was %1 Poptabs", _reloadCost]]] call ExileClient_gui_toaster_addTemplateToast;
