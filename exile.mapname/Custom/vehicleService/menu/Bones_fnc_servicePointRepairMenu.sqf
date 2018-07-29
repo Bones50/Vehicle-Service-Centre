@@ -11,7 +11,7 @@ _rotorRepairItems = ["Exile_Item_MetalBoard", "Exile_Item_MetalPole"];
 _fuelRepairItems = ["Exile_Item_MetalBoard"];
 _otherRepairItems = ["Exile_Item_DuctTape", "Exile_Item_MetalBoard","Exile_Item_MetalScrews","Exile_Item_MetalWire"];
 
-_refuelOption = "true"; //turn on and off refuel option: 1 on, 0 off
+_refuelOption = "true"; //turn on and off refuel option: true - on, false - off
 _fuelingPrice = 10; //price of fuel per litre
 
 //ENDCONFIG
