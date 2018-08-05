@@ -57,9 +57,20 @@ if (_damage == 1) exitwith
 _weapArray = [];
 {
 	_cfgTurret = _x;
+	_magazineArray = getArray (_cfgTurret >> "magazines");
+	_tempArray = [];		
 	{
-		_weapArray pushBack [(getArray (_cfgTurret >> "magazines") select 0),count getArray (_cfgTurret >> "magazines")]
-	} forEach (getArray (_cfgTurret >> "weapons"));
+		_magDetails = [];
+		_tempMag = _x;
+		if !(_tempMag in _tempArray) then 
+		{
+			_tempArray pushback _tempMag;
+			_cnt = {_x == _tempMag} count _magazineArray;
+			_magDetails pushback _tempMag;
+			_magDetails pushback _cnt;
+			_weapArray pushback _magDetails;
+		};
+	} forEach _magazineArray;
 } forEach ([_vehicle] call BIS_fnc_getTurrets);
 
 {
