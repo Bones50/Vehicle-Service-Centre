@@ -1,4 +1,4 @@
-private ["_vehicle", "_allHitpoints", "_hitpointNames", "_totalRepairList", "_totalSalvageList", "_wheelRepairList", "_wheelSalvageList", "_tempLabel", "_noWheels", "_tempExpression", "_tempMenu", "_wheelPrice", "_valueType"];
+private ["_vehicle", "_allHitpoints", "_hitpointNames", "_wheelRepairList", "_tempMenu", "_wheelPrice", "_valueType", "_wheelRepairItems", "_glassRepairItems", "_engineRepairItems", "_rotorRepairItems", "_fuelRepairItems", "_otherRepairItems", "_refuelOption", "_fuelingPrice", "_damage", "_tempSubMenuWheels", "_tempSubMenuWindows", "_totalRepairPrice", "_allWheelPrice", "_allGlassPrice", "_rotorRepairList", "_rotorPrice", "_glassRepairList", "_glassPrice", "_engineRepairList", "_enginePrice", "_fuelRepairList", "_fuelPrice", "_overallDamage", "_otherDamageItems", "_otherPrice", "_maxFuelAmount", "_fuelAmountTemp", "_fuelAmount", "_refillFuelAmount", "_refuelCost", "_backButton", "_wheelMenuOption", "_windowMenuOption"];
 
 //REPAIR CONFIG
 _valueType = "Poptabs"; // type of cost
@@ -21,10 +21,11 @@ if (!local _vehicle) exitwith
 {
 	["InfoTitleAndText", ["Service Point Info", "Get in driver seat first"]] call ExileClient_gui_toaster_addTemplateToast;
 };
-if (ExileClientPlayerIsInCombat) exitWith
+/*if (ExileClientPlayerIsInCombat) exitWith
 {
 	["ErrorTitleOnly", ["You are in combat!"]] call ExileClient_gui_toaster_addTemplateToast;
 };
+*/
 if (vehicle player isEqualTo _vehicle) exitWith 
 {
 	["ErrorTitleOnly", ["Are you serious?"]] call ExileClient_gui_toaster_addTemplateToast;
@@ -47,30 +48,54 @@ _totalRepairPrice = 0;
 _allWheelPrice = 0;
 _allGlassPrice = 0;
 
+//refuel Option
+
+_maxFuelAmount = getnumber (configfile >> "cfgvehicles" >> (typeof _vehicle) >> "fuelCapacity");
+_fuelAmountTemp = fuel _vehicle;
+_fuelAmount = _fuelAmountTemp * _maxFuelAmount;
+_refillFuelAmount = floor(_maxFuelAmount - _fuelAmount);
+_refuelCost = _refillFuelAmount * _fuelingPrice;
+if (_refuelCost > 0 && _refuelOption == "true") then 
+{
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
+	_tempLabel = format ["Refuel the Vehicle - %1 %2", _refuelCost, _valueType];
+	_tempStatement = [];
+	_action = "refuelVehicle";
+	_item = "";
+	_tempStatement pushback _action;
+	_tempStatement pushback _item;
+	_tempStatement pushback _refuelCost;
+	_temp2 = format ["%1 Call salvage_setup", _tempStatement];
+	_tempExpression = [];
+	_tempExpression pushback _tempLabel;
+	_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
+	_tempMenu pushback _tempExpression;
+};
+
 /////////Wheels Menus
 _wheelRepairList = [];
-_noWheelsTemp = getnumber (configfile >> "cfgvehicles" >> (typeof _vehicle) >> "numberPhysicalWheels");
 {
+	private ["_wheel", "_damage"];
 	_wheel = ["wheel", _x] call bis_fnc_instring;
 	if(_wheel) then
 	{
 		_damage = _vehicle getHitPointDamage _x;
-		if (_damage > 0) then 
+		if (_damage > 0.05) then 
 		{
 			_wheelRepairList pushback _x;
 		};
 	};
 }forEach _hitpointNames;
 
-//wheel Repair MenuItems
-//get pricing
 _wheelPrice = 0;
 {
-_wheelPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
-_wheelPrice = _wheelPrice + _wheelPriceTemp;
+	private ["_wheelPriceTemp"];
+	_wheelPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
+	_wheelPrice = _wheelPrice + _wheelPriceTemp;
 } forEach _wheelRepairItems;
 	
-	{
+{
+	private ["_tempLabel", "_noWheels", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
 	_tempLabel = _x;
 	_noWheels = getnumber (configfile >> "cfgvehicles" >> (typeof _vehicle) >> "numberPhysicalWheels");
 	if (_noWheels == 8) then 
@@ -121,10 +146,10 @@ _wheelPrice = _wheelPrice + _wheelPriceTemp;
 			_tempExpression = [];
 			_tempExpression pushback _tempLabel;
 			_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
-			_tempSubMenuWheels pushback _tempExpression;
+			_tempSubMenuWheels pushback _tempExpression;	
+			_totalRepairPrice = _totalRepairPrice + _wheelPrice;
+			_allWheelPrice = _allWheelPrice + _wheelPrice;
 		};
-	_totalRepairPrice = _totalRepairPrice + _wheelPrice;
-	_allWheelPrice = _allWheelPrice + _wheelPrice;
 }forEach _wheelRepairList;
 
 //////////Rotors Menu
@@ -132,6 +157,7 @@ _wheelPrice = _wheelPrice + _wheelPriceTemp;
 _rotorRepairList = [];
 
 {
+	private ["_rotor", "_damage"];
 	_rotor = ["rotor", _x] call bis_fnc_instring;
 	if(_rotor) then
 	{
@@ -143,13 +169,14 @@ _rotorRepairList = [];
 	};
 }forEach _hitpointNames;
 
-//rotor Repair Menu
 _rotorPrice = 0;
 {
-_rotorPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
-_rotorPrice = _rotorPrice + _rotorPriceTemp;
+	private ["_rotorPriceTemp"];
+	_rotorPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
+	_rotorPrice = _rotorPrice + _rotorPriceTemp;
 } forEach _rotorRepairItems;
 {
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
 	_tempLabel = _x;
 	if (_x == "HitHRotor") then {_tempLabel = format ["Repair Main Rotor - %1 %2", _rotorPrice, _valueType]};
 	if (_x == "HitVRotor") then {_tempLabel = format ["Repair Tail Rotor - %1 %2", _rotorPrice, _valueType]};
@@ -167,8 +194,8 @@ _rotorPrice = _rotorPrice + _rotorPriceTemp;
 			_tempExpression pushback _tempLabel;
 			_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
 			_tempMenu pushback _tempExpression;
+			_totalRepairPrice = _totalRepairPrice + _rotorPrice;
 		};
-		_totalRepairPrice = _totalRepairPrice + _rotorPrice;
 }forEach _rotorRepairList;
 
 ///////////Glass Menu
@@ -176,6 +203,7 @@ _rotorPrice = _rotorPrice + _rotorPriceTemp;
 _glassRepairList = [];
 
 {
+	private ["_glass", "_damage"];
 	_glass = ["glass", _x] call bis_fnc_instring;
 	if(_glass) then
 	{
@@ -187,13 +215,14 @@ _glassRepairList = [];
 	};
 }forEach _hitpointNames;
 
-//glass Repair Menu
 _glassPrice = 0;
 {
-_glassPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
-_glassPrice = _glassPrice + _glassPriceTemp;
+	private ["_glassPriceTemp"];
+	_glassPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
+	_glassPrice = _glassPrice + _glassPriceTemp;
 } forEach _glassRepairItems;
 {
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
 	_tempLabel = _x;
 	if (_x == "HitGlass1") then {_tempLabel = format ["Repair Window 1 - %1 %2", _glassPrice, _valueType]};
 	if (_x == "HitGlass1A") then {_tempLabel = format ["Repair Window 1a - %1 %2", _glassPrice, _valueType]};
@@ -230,16 +259,18 @@ _glassPrice = _glassPrice + _glassPriceTemp;
 			_tempExpression pushback _tempLabel;
 			_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
 			_tempSubMenuWindows pushback _tempExpression;
+			_totalRepairPrice = _totalRepairPrice + _glassPrice;
+			_allGlassPrice = _allGlassPrice + _glassPrice;
 		};
-		_totalRepairPrice = _totalRepairPrice + _glassPrice;
-		_allGlassPrice = _allGlassPrice + _glassPrice;
 }forEach _glassRepairList;
 
-//Engine Menu
+/////Engine Menu
 _engineRepairList = [];
 
 {
-	if(_x == "hitEngine") then
+	private ["_engine", "_damage"];
+	_engine = ["engine", _x] call bis_fnc_instring;
+	if(_engine) then
 	{
 		_damage = _vehicle getHitPointDamage _x;
 		if (_damage > 0) then 
@@ -249,16 +280,17 @@ _engineRepairList = [];
 	};
 }forEach _hitpointNames;
 
-//engine Repair
 _enginePrice = 0;
 {
-_enginePriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
-_enginePrice = _enginePrice + _enginePriceTemp;
+	private ["_enginePriceTemp"];
+	_enginePriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
+	_enginePrice = _enginePrice + _enginePriceTemp;
 } forEach _engineRepairItems;
 
 {
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
 	_tempLabel = _x;
-	if (_x == "HitEngine") then {_tempLabel = format ["Repair Engine - %1 %2", _enginePrice, _valueType]};
+	if (_x == "HitEngine") then {_tempLabel = format ["Repair Engine - %1 %2", _enginePrice, _valueType];} else {_tempLabel = "error";};
 	if !(_tempLabel == "error") then
 		{
 			_tempStatement = [];
@@ -272,15 +304,15 @@ _enginePrice = _enginePrice + _enginePriceTemp;
 			_tempExpression = [];
 			_tempExpression pushback _tempLabel;
 			_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
-			_tempMenu pushback _tempExpression;
+			_tempMenu pushback _tempExpression;\
+			_totalRepairPrice = _totalRepairPrice + _enginePrice;
 		};
-		_totalRepairPrice = _totalRepairPrice + _enginePrice;
 }forEach _engineRepairList;
 
-//Fuel Tank Menu
+/////Fuel Tank Menu
 _fuelRepairList = [];
-
 {
+	private ["_damage"];
 	if(_x == "hitFuel") then
 	{
 		_damage = _vehicle getHitPointDamage _x;
@@ -291,14 +323,15 @@ _fuelRepairList = [];
 	};
 }forEach _hitpointNames;
 
-//Fuel Tank Repair
 _fuelPrice = 0;
 {
-_fuelPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
-_fuelPrice = _fuelPrice + _fuelPriceTemp;
+	private ["_fuelPriceTemp"];
+	_fuelPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
+	_fuelPrice = _fuelPrice + _fuelPriceTemp;
 } forEach _fuelRepairItems;
 
 {
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
 	_tempLabel = _x;
 	if (_x == "HitFuel") then {_tempLabel = format ["Repair Fuel Tank - %1 %2", _fuelPrice, _valueType]};
 	if !(_tempLabel == "error") then
@@ -318,10 +351,11 @@ _fuelPrice = _fuelPrice + _fuelPriceTemp;
 		};
 }forEach _fuelRepairList;
 
-//other Repair
+//Hull Repair
 _overallDamage = 0;
 _otherDamageItems = [];
 {
+	private ["_glass", "_rotor", "_wheel", "_engine", "_fuel"];
 	_glass = ["glass", _x] call bis_fnc_instring;
 	_rotor = ["rotor", _x] call bis_fnc_instring;
 	_wheel = ["wheel", _x] call bis_fnc_instring;
@@ -340,11 +374,12 @@ if (_overallDamage > 0) then
 {
 	_otherPrice = 0;
 	{
-	_otherPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
-	_otherPrice = _otherPrice + _otherPriceTemp;
+		private ["_otherPriceTemp"];
+		_otherPriceTemp = (getNumber (missionConfigFile >> "CfgExileArsenal" >> _x >> "price"));
+		_otherPrice = _otherPrice + _otherPriceTemp;
 	} forEach _otherRepairItems;
-
-	_tempLabel = format ["Repair All Other Damaged Items - %1 %2", _otherPrice, _valueType];
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
+	_tempLabel = format ["Repair Hull - %1 %2", _otherPrice, _valueType];
 	_tempStatement = [];
 	_action = "repairOther";
 	_item = _otherDamageItems;
@@ -359,26 +394,10 @@ if (_overallDamage > 0) then
 	_totalRepairPrice = _totalRepairPrice + _otherPrice;
 };
 
-//repair all menu
-if(_totalRepairPrice > 0) then
-{
-_tempLabel = format ["Repair All Items - %1 %2", _totalRepairPrice, _valueType];
-_tempStatement = [];
-_action = "repairAll";
-_item = "";
-_tempStatement pushback _action;
-_tempStatement pushback _item;
-_tempStatement pushback _totalRepairPrice;
-_temp2 = format ["%1 Call salvage_setup", _tempStatement];
-_tempExpression = [];
-_tempExpression pushback _tempLabel;
-_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
-_tempMenu pushback _tempExpression;
-};
-
-//repair all wheels
+/////repair all wheels
 if (_allWheelPrice > 0) then 
 {
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
 	_tempLabel = format ["Repair All Wheels - %1 %2", _allWheelPrice, _valueType];
 	_tempStatement = [];
 	_action = "repairAllWheel";
@@ -393,52 +412,48 @@ if (_allWheelPrice > 0) then
 	_tempMenu pushback _tempExpression;
 };
 
-//repair all glass
+/////repair all glass
 if(_allGlassPrice > 0) then
 {
-_tempLabel = format ["Repair All Glass - %1 %2", _allGlassPrice, _valueType];
-_tempStatement = [];
-_action = "repairAllGlass";
-_item = _glassRepairList;
-_tempStatement pushback _action;
-_tempStatement pushback _item;
-_tempStatement pushback _allGlassPrice;
-_temp2 = format ["%1 Call salvage_setup", _tempStatement];
-_tempExpression = [];
-_tempExpression pushback _tempLabel;
-_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
-_tempMenu pushback _tempExpression;
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
+	_tempLabel = format ["Repair All Glass - %1 %2", _allGlassPrice, _valueType];
+	_tempStatement = [];
+	_action = "repairAllGlass";
+	_item = _glassRepairList;
+	_tempStatement pushback _action;
+	_tempStatement pushback _item;
+	_tempStatement pushback _allGlassPrice;
+	_temp2 = format ["%1 Call salvage_setup", _tempStatement];
+	_tempExpression = [];
+	_tempExpression pushback _tempLabel;
+	_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
+	_tempMenu pushback _tempExpression;
 };
 
-
-//refuel Option
-_maxFuelAmount = getnumber (configfile >> "cfgvehicles" >> (typeof _vehicle) >> "fuelCapacity");
-_fuelAmountTemp = fuel _vehicle;
-_fuelAmount = _fuelAmountTemp * _maxFuelAmount;
-_refillFuelAmount = floor(_maxFuelAmount - _fuelAmount);
-_refuelCost = _refillFuelAmount * _fuelingPrice;
-if (_refuelCost > 0 && _refuelOption == "true") then 
+////repair all
+if(_totalRepairPrice > 0) then
 {
-_tempLabel = format ["Refuel the Vehicle - %1 %2", _refuelCost, _valueType];
-_tempStatement = [];
-_action = "refuelVehicle";
-_item = "";
-_tempStatement pushback _action;
-_tempStatement pushback _item;
-_tempStatement pushback _refuelCost;
-_temp2 = format ["%1 Call salvage_setup", _tempStatement];
-_tempExpression = [];
-_tempExpression pushback _tempLabel;
-_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
-_tempMenu pushback _tempExpression;
+	private ["_tempLabel", "_tempStatement", "_item", "_action", "_temp2", "_tempExpression"];
+	_tempLabel = format ["Repair All Items - %1 %2", _totalRepairPrice, _valueType];
+	_tempStatement = [];
+	_action = "repairAll";
+	_item = "";
+	_tempStatement pushback _action;
+	_tempStatement pushback _item;
+	_tempStatement pushback _totalRepairPrice;
+	_temp2 = format ["%1 Call salvage_setup", _tempStatement];
+	_tempExpression = [];
+	_tempExpression pushback _tempLabel;
+	_tempExpression = _tempExpression + [[0],"",-5, [["expression", _temp2]] ,"1","1"];
+	_tempMenu pushback _tempExpression;
 };
 
 _backButton = ["Back",[0],"",-4,[["expression", "Back ""Mainmenu"" "]],"1","1"];
 _tempSubMenuWheels pushback _backButton;
 _tempSubMenuWindows pushback _backButton;
 
-_wheelMenuOption = ["Repair Individual Wheels",[0],"#USER:ASL_Show_Repair_Service_SubMenuWheels_Array",-5,[["expression", "Wheels ""Submenu"" "]],"1","1"];
-_windowMenuOption = ["Repair Indivual Windows",[0],"#USER:ASL_Show_Repair_Service_SubMenuWindows_Array",-5,[["expression", "Windows ""Submenu"" "]],"1","1"];
+_wheelMenuOption = ["Repair Individual Wheels (Sub Menu)",[0],"#USER:ASL_Show_Repair_Service_SubMenuWheels_Array",-5,[["expression", "Wheels ""Submenu"" "]],"1","1"];
+_windowMenuOption = ["Repair Indivual Windows (Sub Menu)",[0],"#USER:ASL_Show_Repair_Service_SubMenuWindows_Array",-5,[["expression", "Windows ""Submenu"" "]],"1","1"];
 if (_allWheelPrice > 0) then {_tempMenu pushback _wheelMenuOption;};
 if (_allGlassPrice > 0) then {_tempMenu pushback _windowMenuOption;};
 
@@ -453,6 +468,7 @@ showCommandingMenu "";
 showCommandingMenu "#USER:ASL_Show_Repair_Service_Menu_Array";
 
 salvage_setup = {
+private ["_vehicle", "_action", "_items", "_price"];
 _vehicle = cursorTarget;
 _action = _this select 0;
 _items = _this select 1;

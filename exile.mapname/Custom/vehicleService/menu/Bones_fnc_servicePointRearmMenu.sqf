@@ -1,4 +1,4 @@
-private ["_starter", "_costType", "_costTypes", "_defaultCost", "_vehicle", "_vehicleMags", "_tempMenu", "_ammoRearmList", "_repairAllCost", "_tempStatement", "_action", "_item", "_cost", "_temp2", "_tempExpression", "_weapArray", "_cfgTurret"];
+private ["_starter", "_costType", "_costTypes", "_defaultCost", "_vehicle", "_vehicleMags", "_tempMenu", "_ammoRearmList", "_repairAllCost", "_tempStatement", "_action", "_item", "_cost", "_temp2", "_tempExpression", "_weapArray", "_cfgTurret", "_damage"];
 
 //configFile
 _starter = "Reload";
@@ -72,7 +72,7 @@ _tempMenu = [["Vehicle Service Rearm Menu",true]];
 _ammoRearmList = [];
 _repairAllCost = 0;
 {
-	private ["_turretPath", "_totalCost", "_bulletCost", "_maxMag", "_menuItem", "_magClass", "_displayName", "_ammoCount", "_magMaxAmmoCount", "_maxBullets", "_numMagsToLoad", "_currentMags", "_loadedMagCount", "_currentMagToLoad", "_currentMagCost", "_menuItemAndDetails"];
+	private ["_turretPath", "_totalCost", "_bulletCost", "_maxMag", "_menuItem", "_magClass", "_displayName", "_ammoCount", "_magMaxAmmoCount", "_maxBullets", "_numMagsToLoad", "_currentMags", "_loadedMagCount", "_currentMagToLoad", "_currentMagCost", "_menuItemAndDetails", "_pylonIndex"];
 	_turretPath = _x select 0;
 	_totalCost = 0;
 	_bulletCost = 0;
@@ -133,7 +133,7 @@ _repairAllCost = 0;
 
 //Create Menu Items for each magazine
 {
-	private ["_tempLabel"];
+	private ["_tempLabel", "_tempStatement", "_action", "_item", "_cost", "_bullets", "_pylon", "_temp2", "_tempExpression"];
 	_tempLabel = _x select 0;
 	if !(_tempLabel == "error") then
 		{
@@ -180,7 +180,7 @@ showCommandingMenu "";
 showCommandingMenu "#USER:ASL_Show_Repair_Service_Menu_Array";
 
 rearm_setup = {
-private ["_vehicle", "_action", "_items", "_reloadCost", "_bulletAmount"];
+private ["_vehicle", "_action", "_items", "_reloadCost", "_bulletAmount", "_pylon"];
 _vehicle = cursorTarget;
 _action = _this select 0;
 _items = _this select 1;
