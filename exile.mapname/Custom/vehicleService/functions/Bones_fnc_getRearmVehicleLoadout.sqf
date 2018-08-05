@@ -1,4 +1,4 @@
-private ["_pylon", "_pylonRun", "_pylonList", "_magClass","_vehicle", "_currentLoadout", "_turretPath", "_ammoCount", "_magDetail"];
+private ["_pylon", "_pylonRun", "_pylonList", "_magClass", "_currentLoadout", "_turretPath", "_ammoCount", "_magDetail", "_OK"];
 _OK = params
 [
 	["_vehicle", objNull, [objNull]]

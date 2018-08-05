@@ -7,7 +7,7 @@ Call as [_action, _vehicle, _items, _price] execVM 'Custom\vehicleService\Bones_
 
 */
 
-private ["_items", "_vehicle", "_action", "_price"];
+private ["_items", "_vehicle", "_action", "_price", "_exilew"];
 
 _items = _this select 2;
 _vehicle = _this select 1;

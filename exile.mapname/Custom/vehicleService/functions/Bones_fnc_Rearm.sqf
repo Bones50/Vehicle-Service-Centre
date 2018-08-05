@@ -7,15 +7,13 @@ Call as [_action, _vehicle, _items, _reloadCost, _bulletAmount, _pylon] execVM '
 
 */
 
-private ["_mag", "_vehicle", "_action", "_reloadCost", "_bulletAmount", "_maxMag", "_defaultMaxMag", "_exilew", "_vehicleMags", "_weapArray", "_cfgTurret"];
+private ["_mag", "_vehicle", "_action", "_reloadCost", "_bulletAmount", "_exilew", "_vehicleMags", "_weapArray", "_cfgTurret", "_pylonIndex"];
 
 _mag = _this select 2;
 _vehicle = _this select 1;
 _action = _this select 0;
 _reloadCost = _this select 3;
 _bulletAmount = _this select 4;
-_pylon = _this select 5;
-_maxMag = 0;
 
 //get array of [magclass, maxmags] for all turrets weapons and plons
 _weapArray = [];
