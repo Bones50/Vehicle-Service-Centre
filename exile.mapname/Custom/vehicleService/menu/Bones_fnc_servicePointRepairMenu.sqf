@@ -21,11 +21,10 @@ if (!local _vehicle) exitwith
 {
 	["InfoTitleAndText", ["Service Point Info", "Get in driver seat first"]] call ExileClient_gui_toaster_addTemplateToast;
 };
-/*if (ExileClientPlayerIsInCombat) exitWith
+if (ExileClientPlayerIsInCombat) exitWith
 {
 	["ErrorTitleOnly", ["You are in combat!"]] call ExileClient_gui_toaster_addTemplateToast;
 };
-*/
 if (vehicle player isEqualTo _vehicle) exitWith 
 {
 	["ErrorTitleOnly", ["Are you serious?"]] call ExileClient_gui_toaster_addTemplateToast;
